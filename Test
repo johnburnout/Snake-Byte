@@ -1,0 +1,221 @@
+####################
+# Snake Byte v1.0  #
+#   Jean Roussie   #
+# jean@roussie.net #
+####################    
+
+class SnakeByte(object) :
+    def __init__(self):
+        """Construction de la fenêtre principale"""
+        self.root = Tk()
+        self.root.title('Snake Byte')
+        self.root.configure(bg='light grey')
+        
+        self.largeur, self.hauteur = 30, 25
+        
+        #--- Polices de caractères
+
+        self.helv18 = tkFont.Font(family='Helvetica', size=18)
+        self.helv18b = tkFont.Font(family='Helvetica', size=18, weight='bold')
+        self.helv24 = tkFont.Font(family='Helvetica', size=24)
+        self.helv24b = tkFont.Font(family='Helvetica', size=24, weight='bold')
+        self.helv36 = tkFont.Font(family='Helvetica', size=36, weight='bold')
+        
+        #--- Intialisation des variables 
+        
+        
+        self.orientationTete = 0
+        self.dx = 1
+        self.dy = 0
+        self.croque = 0
+        
+        #--- Intialisation des variables Tkinter
+
+        self.score = StringVar()
+        self.hiScore = StringVar()
+
+        self.score.set("0")
+
+        try :
+            fichier = open('hiscore', 'r') # ouverture du fichier de stockage des high score en lecture
+            self.hiScore.set(fichier.read())
+            fichier.close()
+        except :
+            self.hiScore.set("0")
+
+        self.root.bind_all("<Left>", self.tourneGauche)
+        self.root.bind_all("<Right>", self.tourneDroite)
+        self.root.bind_all("<space>", self.depart)
+        self.root.bind_all("<Escape>", self.quitter)
+
+        self.terrain = Canvas(self.root, width=self.largeur*20, height=self.hauteur*20, bg="green")
+        self.terrain.grid(row=1, columnspan=5, padx=5, pady=5)
+
+        Label(self.root, text = 'Score :', font=self.helv18).grid(row=0, column=0, padx=5, pady=5, sticky=E)
+        Label(self.root, textvariable = self.score, font=self.helv18b, bg='light grey').grid(row=0, column=1, padx=5, pady=5, sticky=W)
+        Label(self.root, text = 'Hi Score :', font=self.helv18).grid(row=0, column=3, padx=5, pady=5, sticky=E)
+        Label(self.root, textvariable = self.hiScore, font=self.helv18b, bg='dark grey', fg='white').grid(row=0, column=4, padx=5, pady=5, sticky=W)
+
+        Label(self.root, text='Snake Byte', font=self.helv36, bg='green', fg="#cc9f26").grid(row=0, column=2, padx=25, pady=5)
+        Label(self.root, text='Démarrer : [Espace] - Diriger le serpent : [<-] [->] - Quiter : [esc]', bg='light grey', fg='black').grid(row=2, columnspan=5, pady=5)
+
+
+        self.img_tete = [PhotoImage(file="tete_E.png"),PhotoImage(file="tete_S.png"),PhotoImage(file="tete_W.png"),PhotoImage(file="tete_N.png")]
+        self.img_queue = [PhotoImage(file="queue_E.png"),PhotoImage(file="queue_S.png"),PhotoImage(file="queue_W.png"),PhotoImage(file="queue_N.png")]
+        self.img_corps = PhotoImage(file="corps.png")
+        self.img_pomme = PhotoImage(file="pomme.png")
+
+        # initiation du serpent
+
+
+        self.gameOver = self.terrain.create_text(20*self.largeur//2, 20*self.hauteur//2, text='', font=self.helv36, fill='white')
+        self.serpent = [
+            [1,self.hauteur//2,0,self.terrain.create_image(20*1-10,self.hauteur//2*20-10, image=self.img_tete[0])],
+            [0,self.hauteur//2,0,self.terrain.create_image(19*0-10,self.hauteur//2*20-10, image=self.img_queue[0])]
+        ]
+
+        test = 0
+        if test == 0 :
+            self.xPomme = randint(1, self.largeur)
+            self.yPomme = randint(1, self.hauteur)
+            for piece in self.serpent :
+                if self.xPomme == piece[0] and self.yPomme == piece[1] :
+                    test =1
+        self.pomme = self.terrain.create_image(-100,-100, image=self.img_pomme)
+        self.root.mainloop()
+        
+    def deplacePomme(self) :
+        " genération d'une pomme"
+
+        test = 0
+        while test == 0 :
+            test = 1
+            x =randint(1, self.largeur)
+            y =randint(1, self.hauteur)
+            #print(str(x)+" "+str(y))
+            for piece in self.serpent :
+                if x == piece[0] and y == piece[1] :
+                    test = 0
+        self.terrain.coords(self.pomme, 20*x-10, 20*y-10)
+        self.xPomme = x
+        self.yPomme = y
+        #test = 0
+
+        
+    def tourneGauche(self, event) :
+        "tourner à gauche"
+        
+        if self.orientationTete == 0 :
+            self.dx = 0
+            self.dy = -1
+            self.orientationTete = 3
+        elif self.orientationTete == 1 :
+            self.dx = 1
+            self.dy = 0
+            self.orientationTete = 0
+        elif self.orientationTete == 2 :
+            self.dx = 0
+            self.dy = 1
+            self.orientationTete = 1
+        else :
+            self.dx = -1
+            self.dy = 0
+            self.orientationTete = 2
+
+    def tourneDroite(self, event) :
+        "tourner à droite"
+        
+        if self.orientationTete == 0 :
+            self.dx = 0
+            self.dy = 1
+            self.orientationTete = 1
+        elif self.orientationTete == 1 :
+            self.dx = -1
+            self.dy = 0
+            self.orientationTete = 2
+        elif self.orientationTete == 2 :
+            self.dx = 0
+            self.dy = -1
+            self.orientationTete = 3
+        else :
+            self.dx = 1
+            self.dy = 0
+            self.orientationTete = 0
+
+    def deplacement(self) :
+        "Modification du serpent"
+
+        longueur = len(self.serpent)
+        x, y = self.serpent[0][0]+self.dx, self.serpent[0][1]+self.dy
+        self.terrain.delete(self.serpent[longueur-1][3])
+        if self.croque == 0 :
+            del self.serpent[longueur - 1]
+            longueur = longueur -1
+        longueur = longueur + 1
+        self.croque = 0
+        self.serpent.insert(0, [x, y, self.orientationTete, self.terrain.create_image(20*x-10, 20*y-10, image=self.img_tete[self.orientationTete])])
+        self.terrain.itemconfigure(self.serpent[1][3], image=self.img_corps)
+        self.terrain.itemconfigure(self.serpent[longueur-1][3], image=self.img_queue[self.serpent[longueur-2][2]])
+        
+        if x>self.largeur or x<=0 or y>self.hauteur or y<=0 : # Le serpent touche-t-il le bord ?
+            self.fini = 1
+            self.fin()
+            
+        for piece in self.serpent[3:-1] :    # Le serpent se mord-il la queue ?
+            if x == piece[0] and y == piece[1] :
+                self.fini = 1
+                self.fin()
+                
+        if x == self.xPomme and y == self.yPomme :    # Le serpent mange-t-il une pomme ?
+            self.deplacePomme()
+            self.croque = 1
+            self.score.set(str(eval(self.score.get()+"+1")))
+            if eval(self.score.get()) > eval(self.hiScore.get()) :           
+                self.hiScore.set(self.score.get())
+                
+        self.root.after(75, self.deplacement)        # Boucle récursive
+                
+    def depart(self, event) :
+        "Initialisation et lancement du jeu"
+            
+        # Réinitialisation des paramètres du jeu
+                
+        self.score.set('0')
+        self.terrain.delete(self.gameOver)
+        self.orientationTete = 0
+        self.dx = 1
+        self.dy = 0
+        self.fini = 0
+        for piece in self.serpent :
+            self.terrain.delete(piece[3])
+        self.terrain.delete(self.serpent)
+        self.terrain.delete(self.gameOver)
+        self.serpent = [
+            [1,self.hauteur//2,0,self.terrain.create_image(1*20-10,self.hauteur//2*20-10, image=self.img_tete[0])],
+            [0,self.hauteur//2,0,self.terrain.create_image(0*20-10,self.hauteur//2*20-10, image=self.img_queue[0])]
+        ]
+        self.deplacePomme()
+        self.deplacement() # Lancement de l'animation
+
+    def fin(self) :        
+        "Terminer le jeu"
+
+        self.terrain.delete(self.gameOver)
+        self.gameOver = self.terrain.create_text(20*self.largeur//2, 20*self.hauteur//2, text='Game Over', font=self.helv36, fill='white')
+        
+        fichier = open('hiscore', 'w') # ouverture d'un fichier vierge d'écriture des high scores
+        fichier.write(self.hiScore.get())
+        fichier.close()
+        
+    def quitter(self, event) :
+        "Quitter le jeu"
+        
+        self.root.quit()
+
+# Programme principal
+
+if __name__ == "__main__" :
+    from tkinter import *
+    import tkinter.font as tkFont
+    from random import randint
+    jeu = SnakeByte()
