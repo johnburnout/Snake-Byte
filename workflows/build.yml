@@ -1,51 +1,40 @@
-name: Build Executables
+name: Build Snake Byte Executables
 
-# Déclenchement du workflow
 on:
-  # Manuellement depuis l'interface GitHub
-  workflow_dispatch:
-  # Automatiquement quand on pousse un tag (comme v1.0.0)
+  workflow_dispatch:  # Déclenchement manuel
   push:
     tags:
-      - 'v*'
+      - 'v*'           # Déclenchement automatique sur les tags
 
 jobs:
   build:
-    # Stratégie pour construire sur plusieurs systèmes d'exploitation
     strategy:
       matrix:
-        os: [macos-latest, windows-latest] # Seulement Mac et Windows
-        # os: [ubuntu-latest, macos-latest, windows-latest] # Pour inclure Linux
-
+        os: [macos-latest, windows-latest]
+        # os: [ubuntu-latest, macos-latest, windows-latest] # Optionnel : ajouter Linux
+    
     runs-on: ${{ matrix.os }}
+    
     steps:
-      # 1. Récupérer le code du dépôt
       - name: Checkout code
         uses: actions/checkout@v4
-
-      # 2. Installer Python
-      - name: Set up Python
+      
+      - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.10' # Utilisez la version que vous voulez
-
-      # 3. Installer les dépendances
-      - name: Install dependencies
+          python-version: '3.10'
+      
+      - name: Install PyInstaller
         run: |
           python -m pip install --upgrade pip
           pip install pyinstaller
-          # Si vous avez un fichier requirements.txt, décommentez la ligne suivante :
-          # pip install -r requirements.txt
-
-      # 4. Construire l'exécutable avec PyInstaller
-      - name: Build with PyInstaller
+          # Pas besoin d'installer requirements.txt car il est vide !
+      
+      - name: Build executable with PyInstaller
         run: |
           pyinstaller --onefile --name "Snake-Byte" --windowed main.py
-          # Le flag --windowed empêche l'ouverture d'une console (pour une app graphique)
-          # Le flag --onefile crée un unique fichier exécutable
-
-      # 5. Renommer l'exécutable selon l'OS
-      - name: Rename executable
+      
+      - name: Rename executable by platform
         shell: bash
         run: |
           if [ "$RUNNER_OS" == "Windows" ]; then
@@ -53,8 +42,7 @@ jobs:
           elif [ "$RUNNER_OS" == "macOS" ]; then
             mv dist/Snake-Byte dist/Snake-Byte-macOS
           fi
-
-      # 6. Télécharger l'exécutable comme artefact
+      
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
