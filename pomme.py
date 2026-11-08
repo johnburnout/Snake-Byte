@@ -7,6 +7,7 @@
 # ##################
 
 from tkinter import PhotoImage
+from chemins import ressource
 
 
 class Pomme(object):
@@ -17,7 +18,7 @@ class Pomme(object):
 		
 		# Initialisation des variables
 		
-		self.img_pomme = PhotoImage(file="images/pomme.png")
+		self.img_pomme = PhotoImage(file=ressource("images/pomme.png"))
 		
 		self.pomme = self.canevas.create_image(self.x, self.y, image=self.img_pomme)
 	
