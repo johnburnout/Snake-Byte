@@ -7,7 +7,9 @@
 # ##################
 
 
+import ast
 import tkinter.font as tkfont
+from tkinter import *
 from random import randint
 from serpent import Serpent
 from pomme import Pomme
@@ -130,6 +132,7 @@ class SnakeByte(Tk):    # la classe SnakeByte dérive de la classe Tk de tkinter
             except AttributeError:
                 pass
             self.fini = 0
+            self.croque = 0
             
             [self.largeur, self.son] = init_largeur()
             self.hauteur = 3*self.largeur//4
@@ -155,9 +158,6 @@ class SnakeByte(Tk):    # la classe SnakeByte dérive de la classe Tk de tkinter
             self.bell()
         self.gameOver = self.terrain.create_text(20*self.largeur//2, 20*self.hauteur//2,
                                                  text='Game Over', font=self.helv36, fill='white')
-        fichier = open(fichier_usager('hiscore'), 'w')  # ouverture d'un fichier vierge d'écriture des high scores
-        fichier.write(str(self.scores))
-        fichier.close()
         self.ecriture_hi_score(self.largeur)
     
     def quitter(self, event):
@@ -174,8 +174,8 @@ class SnakeByte(Tk):    # la classe SnakeByte dérive de la classe Tk de tkinter
                 if self.son == 'On':
                     self.bell()
                 self.croque = 1
-                self.score.set(str(eval(self.score.get()+"+1")))
-                if eval(self.score.get()) > eval(self.hiScore.get()):
+                self.score.set(str(int(self.score.get()) + 1))
+                if int(self.score.get()) > int(self.hiScore.get()):
                     self.hiScore.set(self.score.get())
                 self.deplace_pomme()
             else:
@@ -188,20 +188,20 @@ class SnakeByte(Tk):    # la classe SnakeByte dérive de la classe Tk de tkinter
         
         self.scores = {}
         try:
-            fichier = open(fichier_usager('hiscore'), 'r')  # ouverture du fichier de stockage des high score en lecture
-            self.scores = eval(fichier.read())
-            fichier.close()
-            hiscore = str(self.scores.get(largeur, 0))
-        except FileNotFoundError:
-            hiscore = "0"
-        return hiscore
+            # lecture du fichier des high scores : un dictionnaire {largeur: score}
+            with open(fichier_usager('hiscore'), 'r') as fichier:
+                scores = ast.literal_eval(fichier.read())
+            if isinstance(scores, dict):
+                self.scores = scores
+        except (OSError, ValueError, SyntaxError):    # fichier absent ou illisible
+            pass
+        return str(self.scores.get(largeur, 0))
     
     def ecriture_hi_score(self, largeur):
         
         self.scores[largeur] = int(self.hiScore.get())
-        fichier = open(fichier_usager('hiscore'), 'w')
-        fichier.write(str(self.scores))
-        fichier.close()
+        with open(fichier_usager('hiscore'), 'w') as fichier:
+            fichier.write(str(self.scores))
         
     def preferences(self, event=None):
 

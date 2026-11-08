@@ -9,6 +9,10 @@
 from tkinter import PhotoImage
 from chemins import ressource
 
+# Déplacement (dx, dy) pour chaque orientation : Est, Sud, Ouest, Nord
+DIRECTIONS = [(1, 0), (0, 1), (-1, 0), (0, -1)]
+VIRAGES_MAX = 3    # nombre de virages gardés en mémoire d'avance
+
 
 class Serpent(object):
     """Classe de corps"""
@@ -27,16 +31,16 @@ class Serpent(object):
         self.img_corps = PhotoImage(file=ressource("images/corps.png"))
 
         # Mise en place du serpent en position de départ
-        self.orientationTete = 0
-        self.dx = 1
-        self.dy = 0
+        self.orientationTete = 0    # 0 : Est, 1 : Sud, 2 : Ouest, 3 : Nord
+        self.dx, self.dy = DIRECTIONS[0]
         self.croque = 0
+        self.virages = []    # virages demandés, appliqués un par case parcourue
 
         self.corps = [
             [1, self.hauteur // 2, 0,
              self.canevas.create_image(20 * 1 - 10, self.hauteur // 2 * 20 - 10, image=self.img_tete[0])],
             [0, self.hauteur // 2, 0,
-             self.canevas.create_image(19 * 0 - 10, self.hauteur // 2 * 20 - 10, image=self.img_queue[0])]
+             self.canevas.create_image(20 * 0 - 10, self.hauteur // 2 * 20 - 10, image=self.img_queue[0])]
         ]
 
     def efface(self):
@@ -47,64 +51,39 @@ class Serpent(object):
 
     def tourne_gauche(self, event):
         """tourner à gauche"""
-        
-        if self.orientationTete == 0:
-            self.dx = 0
-            self.dy = -1
-            self.orientationTete = 3
-        elif self.orientationTete == 1:
-            self.dx = 1
-            self.dy = 0
-            self.orientationTete = 0
-        elif self.orientationTete == 2:
-            self.dx = 0
-            self.dy = 1
-            self.orientationTete = 1
-        else:
-            self.dx = -1
-            self.dy = 0
-            self.orientationTete = 2
+
+        if len(self.virages) < VIRAGES_MAX:
+            self.virages.append(-1)
 
     def tourne_droite(self, event):
         """tourner à droite"""
-        
-        if self.orientationTete == 0:
-            self.dx = 0
-            self.dy = 1
-            self.orientationTete = 1
-        elif self.orientationTete == 1:
-            self.dx = -1
-            self.dy = 0
-            self.orientationTete = 2
-        elif self.orientationTete == 2:
-            self.dx = 0
-            self.dy = -1
-            self.orientationTete = 3
-        else:
-            self.dx = 1
-            self.dy = 0
-            self.orientationTete = 0
+
+        if len(self.virages) < VIRAGES_MAX:
+            self.virages.append(1)
 
     def deplacement(self, croque):
         """déplacement du serpent d'une case"""
 
+        # Un seul virage par case : deux appuis rapides ne peuvent plus faire
+        # faire demi-tour au serpent sur place (il se traversait lui-même)
+        if self.virages:
+            self.orientationTete = (self.orientationTete + self.virages.pop(0)) % 4
+            self.dx, self.dy = DIRECTIONS[self.orientationTete]
+
         self.croque = croque
-        longueur = len(self.corps)
         x, y = self.corps[0][0]+self.dx, self.corps[0][1]+self.dy
-        self.canevas.delete(self.corps[longueur-1][3])
-        if self.croque == 0:
-            del self.corps[longueur - 1]
-            longueur = longueur - 1
-        longueur = longueur + 1
+        if self.croque == 0:    # La queue avance, sauf si le serpent grandit
+            self.canevas.delete(self.corps[-1][3])
+            del self.corps[-1]
         self.corps.insert(0,
                           [x, y, self.orientationTete,
                            self.canevas.create_image(20*x-10, 20*y-10, image=self.img_tete[self.orientationTete])])
         self.canevas.itemconfigure(self.corps[1][3], image=self.img_corps)
-        self.canevas.itemconfigure(self.corps[longueur-1][3], image=self.img_queue[self.corps[longueur-2][2]])
+        self.canevas.itemconfigure(self.corps[-1][3], image=self.img_queue[self.corps[-2][2]])
         fini = 0
         if x > self.largeur or x <= 0 or y > self.hauteur or y <= 0:    # Le corps touche-t-il le bord ?
             fini = 1
-        for piece in self.corps[3:-1]:    # Le corps se mord-il la queue ?
+        for piece in self.corps[1:]:    # Le corps se mord-il la queue ?
             if x == piece[0] and y == piece[1]:
                 fini = 1
         return fini

@@ -12,11 +12,12 @@ from chemins import fichier_usager
 
 def init_largeur():
     try:
-        f = open(fichier_usager("prefs"), "r")
-        larg = int(f.readline())
-        son = f.readline()
-        f.close()
-    except FileNotFoundError:
+        with open(fichier_usager("prefs"), "r") as f:
+            larg = int(f.readline())
+            son = f.readline().strip()
+        if son not in ('On', 'Off'):
+            son = 'On'
+    except (OSError, ValueError):    # fichier absent ou illisible
         larg = 40
         son = 'On'
     return [larg, son]
@@ -54,18 +55,15 @@ class Preferences(tkinter.Toplevel):
 
         tkinter.Button(self, text="Enregistrer", command=self.valider, bg="light grey",
                        activebackground="dark grey", borderwidth=1).grid(padx=5, pady=5, row=1, column=1)
-        
-        self.mainloop()
-        
+
     def valider(self):
-        f = open(fichier_usager("prefs"), "w")
-        f.write("{}\n{}".format(self.curseur.get(), self.son.get()))
-        f.close()
+        with open(fichier_usager("prefs"), "w") as f:
+            f.write("{}\n{}".format(self.curseur.get(), self.son.get()))
         self.boss.son = self.son.get()
-        print('grrrr')
         self.boss.quitter_prefs()
         self.destroy()
     
 
 if __name__ == "__main__":
     prefs = Preferences()
+    prefs.mainloop()
