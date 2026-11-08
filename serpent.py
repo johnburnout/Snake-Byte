@@ -7,6 +7,7 @@
 # ###################
 
 from tkinter import PhotoImage
+from chemins import ressource
 
 
 class Serpent(object):
@@ -19,11 +20,11 @@ class Serpent(object):
         
         # --- Intialisation des variables
         
-        self.img_tete = [PhotoImage(file="images/tete_E.png"), PhotoImage(file="images/tete_S.png"),
-                         PhotoImage(file="images/tete_W.png"), PhotoImage(file="images/tete_N.png")]
-        self.img_queue = [PhotoImage(file="images/queue_E.png"), PhotoImage(file="images/queue_S.png"),
-                          PhotoImage(file="images/queue_W.png"), PhotoImage(file="images/queue_N.png")]
-        self.img_corps = PhotoImage(file="images/corps.png")
+        self.img_tete = [PhotoImage(file=ressource("images/tete_E.png")), PhotoImage(file=ressource("images/tete_S.png")),
+                         PhotoImage(file=ressource("images/tete_W.png")), PhotoImage(file=ressource("images/tete_N.png"))]
+        self.img_queue = [PhotoImage(file=ressource("images/queue_E.png")), PhotoImage(file=ressource("images/queue_S.png")),
+                          PhotoImage(file=ressource("images/queue_W.png")), PhotoImage(file=ressource("images/queue_N.png"))]
+        self.img_corps = PhotoImage(file=ressource("images/corps.png"))
 
         # Mise en place du serpent en position de départ
         self.orientationTete = 0
@@ -37,6 +38,12 @@ class Serpent(object):
             [0, self.hauteur // 2, 0,
              self.canevas.create_image(19 * 0 - 10, self.hauteur // 2 * 20 - 10, image=self.img_queue[0])]
         ]
+
+    def efface(self):
+        """Efface le serpent du canevas"""
+
+        for piece in self.corps:
+            self.canevas.delete(piece[3])
 
     def tourne_gauche(self, event):
         """tourner à gauche"""

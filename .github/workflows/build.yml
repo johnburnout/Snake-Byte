@@ -35,8 +35,9 @@ jobs:
 
       - name: Construire l'exécutable avec PyInstaller
         run: |
-          pyinstaller --onefile --name "Snake-Byte" --windowed main.py
+          pyinstaller --onefile --name "Snake-Byte" --windowed --add-data "images:images" main.py
           # --windowed : empêche l'ouverture d'une console (mode graphique)
+          # --add-data : embarque les images dans l'exécutable (séparateur ':' accepté partout depuis PyInstaller 6)
 
       - name: Renommer l'exécutable selon la plateforme
         shell: bash
@@ -59,6 +60,9 @@ jobs:
     runs-on: ubuntu-latest
     # Ne s'exécute que si le workflow a été déclenché par un tag
     if: startsWith(github.ref, 'refs/tags/')
+    # Nécessaire pour que GITHUB_TOKEN puisse créer la Release
+    permissions:
+      contents: write
     steps:
       - name: Récupérer tous les artefacts
         uses: actions/download-artifact@v4

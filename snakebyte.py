@@ -13,6 +13,7 @@ from serpent import Serpent
 from pomme import Pomme
 from preferences import *
 from apropos import *
+from chemins import fichier_usager
 
 
 class BarreMenu(Frame):
@@ -27,7 +28,7 @@ class BarreMenu(Frame):
         self.menuFichier.add_command(label="A propos", command=boss.a_propos, font=('Helvetica', 14))
         self.menuFichier.add_separator()
         self.menuFichier.add_command(label="Préférences", command=boss.preferences, font=('Helvetica', 14))
-        self.menuFichier.add_command(label="Quitter", command=quit, font=('Helvetica', 14))
+        self.menuFichier.add_command(label="Quitter", command=boss.quit, font=('Helvetica', 14))
         
         menu_fichier.configure(menu=self.menuFichier)
 
@@ -140,6 +141,7 @@ class SnakeByte(Tk):    # la classe SnakeByte dérive de la classe Tk de tkinter
             
             # self.serpent.initialisation()
             
+            self.serpent.efface()    # Efface le serpent de la partie précédente
             self.serpent.__init__(self.terrain, self.largeur, self.hauteur)
             self.quitter_prefs()
 
@@ -153,7 +155,7 @@ class SnakeByte(Tk):    # la classe SnakeByte dérive de la classe Tk de tkinter
             self.bell()
         self.gameOver = self.terrain.create_text(20*self.largeur//2, 20*self.hauteur//2,
                                                  text='Game Over', font=self.helv36, fill='white')
-        fichier = open('usager/hiscore', 'w')  # ouverture d'un fichier vierge d'écriture des high scores
+        fichier = open(fichier_usager('hiscore'), 'w')  # ouverture d'un fichier vierge d'écriture des high scores
         fichier.write(str(self.scores))
         fichier.close()
         self.ecriture_hi_score(self.largeur)
@@ -186,10 +188,10 @@ class SnakeByte(Tk):    # la classe SnakeByte dérive de la classe Tk de tkinter
         
         self.scores = {}
         try:
-            fichier = open('usager/hiscore', 'r')  # ouverture du fichier de stockage des high score en lecture
+            fichier = open(fichier_usager('hiscore'), 'r')  # ouverture du fichier de stockage des high score en lecture
             self.scores = eval(fichier.read())
             fichier.close()
-            hiscore = str(self.scores[largeur])
+            hiscore = str(self.scores.get(largeur, 0))
         except FileNotFoundError:
             hiscore = "0"
         return hiscore
@@ -197,7 +199,7 @@ class SnakeByte(Tk):    # la classe SnakeByte dérive de la classe Tk de tkinter
     def ecriture_hi_score(self, largeur):
         
         self.scores[largeur] = int(self.hiScore.get())
-        fichier = open('usager/hiscore', 'w')
+        fichier = open(fichier_usager('hiscore'), 'w')
         fichier.write(str(self.scores))
         fichier.close()
         

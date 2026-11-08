@@ -7,11 +7,12 @@
 # ##################
 
 import tkinter
+from chemins import fichier_usager
 
 
 def init_largeur():
     try:
-        f = open("usager/prefs", "r")
+        f = open(fichier_usager("prefs"), "r")
         larg = int(f.readline())
         son = f.readline()
         f.close()
@@ -57,7 +58,7 @@ class Preferences(tkinter.Toplevel):
         self.mainloop()
         
     def valider(self):
-        f = open("usager/prefs", "w")
+        f = open(fichier_usager("prefs"), "w")
         f.write("{}\n{}".format(self.curseur.get(), self.son.get()))
         f.close()
         self.boss.son = self.son.get()
