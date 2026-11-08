@@ -32,13 +32,11 @@ class APropos(Toplevel):
               bg='light grey', justify='center').grid(row=2, column=0, columnspan=3, padx=5, pady=5)
         Button(self, text="Fermer", command=self.quitter, bg='light grey',
                relief=RAISED).grid(row=10, column=2, padx=5, pady=5)
-        
-        self.mainloop()
-        
+
     def quitter(self):
         self.boss.quitter_a_propos()
         self.destroy()
 
 
 if __name__ == "__main__":
-    prefs = APropos()
+    APropos().mainloop()

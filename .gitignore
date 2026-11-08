@@ -1,0 +1,25 @@
+# Environnements virtuels (la racine du projet en est un aussi)
+/bin/
+/lib/
+/include/
+/venv/
+/pyvenv.cfg
+
+# Python
+__pycache__/
+*.pyc
+
+# PyInstaller
+/build/
+/dist/
+*.spec
+
+# IDE / système
+.idea/
+.DS_Store
+
+# Données de l'utilisateur (scores, préférences)
+/usager/
+
+# Projet séparé, hors Snake Byte
+/probabilites/
